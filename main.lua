@@ -12,6 +12,7 @@ debuger = {
 class_base= require("helper.classic")
 console =require("helper.console")
 timer =require("helper.timer")
+helpers = require("helper.helpers")
 
 game =require("game")
 
@@ -75,6 +76,7 @@ end
 
 function love.mousepressed(x,y,btn,t)
   game.MouseHandle(x,y,btn,t)
+  print("Mouse pressed:"..x.."  "..y.."  "..btn.." ")
 end
 
 function love.mousemoved(x,y,dx,dy)
@@ -82,7 +84,8 @@ function love.mousemoved(x,y,dx,dy)
 end
 
 function love.joystickpressed(j,b)
-    b_to_k ={        [1] ="x"
+    b_to_k ={
+        [1] ="x"
     }
     if b_to_k[b]~= nil then
         print(j,b)

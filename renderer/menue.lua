@@ -52,7 +52,7 @@ end
 
 function main_menue()
   
-  menue("Sample menue",{"Start new","Load old","Options","Exit"},0,0,400,400,main_menue_item,false)
+  menue("RootZen",{"Start"},0,0,400,400,main_menue_item,false)
 end
 
 

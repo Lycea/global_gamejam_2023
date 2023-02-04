@@ -1,8 +1,11 @@
 require("key_handle")
 require("renderer.renderer")
+g = require("globals")
+
 
 require("states.game_states")
 sample_state=require("states.state_sample")
+
 
 
 local game ={} 
@@ -118,23 +121,12 @@ end
 
 function game.play(dt) 
 
-    
-
-  for key,v in pairs(key_list)do
-      attack   = false
-      movement = {x=0,y=0}
-      
+  --handle keys,  mainly used for menue action here....
+  for key,v in pairs(key_list)do      
       --print("got some id",plid)
       
         --print(key,v)
         local action=handle_keys(key)--get key callbacks
-        
-        
-        
-        if action["move"] and game_state==GameStates.PLAYING then
-            movement.x=movement.x+action["move"][1]
-            movement.y=movement.y+action["move"][2]
-        end
         
         
         if action["exit"]  then
@@ -144,21 +136,9 @@ function game.play(dt)
             end
             
         end
-        
-        
-        if action["attack"] then
-            attack = true
-            
-        end
-      
   end
  
   sample_state:update()
-  
-  
-  -- Enemy behaviour basic / Enemy turn
-  
-
 end 
  
  
