@@ -44,7 +44,12 @@ end
 
 
 local function draw_puddle(puddle, offsets)
-    love.graphics.setColor(20,235,247)
+    if puddle.selected then
+        love.graphics.setColor(255,0,0)
+        
+    else
+        love.graphics.setColor(20,235,247)
+    end
     love.graphics.circle("fill",
                             puddle.pos.x + offsets.x,
                             puddle.pos.y + offsets.y,
@@ -63,10 +68,10 @@ local function grid()
     
 
     for idx, grid_key in pairs(viewable_grids) do
-        print("debug print keys")
-        for key,val in pairs( g.vars.full_grid) do
-            print(key)
-        end
+        --print("debug print keys")
+        --for key,val in pairs( g.vars.full_grid) do
+        --    print(key)
+        --end
 
         local draw_grid =g.vars.full_grid[grid_key]
 
@@ -77,8 +82,8 @@ local function grid()
         }
 
         love.graphics.rectangle("line",
-                                base_offset.x + draw_grid.idx.x*grid_size.w,
-                                base_offset.y + draw_grid.idx.y*grid_size.h,
+                                offset.x,
+                                offset.y,
                                 grid_size.w,grid_size.h)
 
         for _,puddle in pairs(draw_grid.objects.puddles) do
@@ -102,13 +107,36 @@ end
 
 
 function in_root:update()
+    local viewable_grids ={"0:0","1:0","-1:0"}
+
     print(love.mouse.isDown(1))
     if love.mouse.isDown(1) and g.vars.click_timer:check() then
        local m_pos_x,m_pos_y = love.mouse.getPosition()
-       print("adding")
+       --print("adding")
        local pos = g.libs.types.pos(m_pos_x,m_pos_y)
-       print(pos.x,pos.y)
+       --print(pos.x,pos.y)
        g.var("main_root"):append(pos)
+
+    end
+
+    if mouse_moved then
+        local found_hit = false
+        for _,grid_id in pairs(viewable_grids) do
+            local grid = g.vars.full_grid[grid_id]
+
+            for _ ,puddle in pairs(grid.objects.puddles) do
+                if helpers.to_glob( puddle.pos,grid.idx.x,grid.idx.y ):distance_to(mouse_coords) <= puddle.size then
+                    puddle.selected = true
+                    print("Found selection o:")
+                    found_hit = true
+                    break
+                end
+            end
+
+            if found_hit then
+                break
+            end
+        end
     end
 end
 

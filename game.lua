@@ -42,6 +42,7 @@ key_timer = 0--timer between movement
 
 
 mouse_coords={0,0}
+mouse_moved = false
 
 
 exit_timer =0
@@ -155,7 +156,7 @@ function game.update(dt)
   --handle menue
   update_menue()
   
-    
+  mouse_moved = false
 end
 
  
@@ -192,7 +193,8 @@ function game.MouseHandle(x,y,btn)
 end 
  
 function game.MouseMoved(mx,my) 
-  mouse_coords={mx,my}
+  mouse_coords=  g.libs.types.pos(mx,my)
+  mouse_moved = true
 end 
  
  

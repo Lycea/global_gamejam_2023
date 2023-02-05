@@ -23,4 +23,7 @@ lib("components.root","Root")
 lib("helper.base_types","types")
 lib("components.generator","generator")
 
+
+gvar.visible_grids ={}
+
 return globals

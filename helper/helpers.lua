@@ -22,4 +22,17 @@ function helpers.clear_color()
     love.graphics.setColor(255,255,255,255)
 end
 
+function helpers.to_glob(loc_pos,grid_x,grid_y)
+  grid_size = g.lib("generator").grid_size
+    
+  base_offset={
+      x= scr_w/2 -grid_size.w/2,
+      y= 160 
+  }
+
+  return g.libs.types.pos(
+    base_offset.x + grid_x*grid_size.w  +loc_pos.x,
+    base_offset.y + grid_y*grid_size.h  +loc_pos.y)
+end
+
 return helpers
