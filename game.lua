@@ -149,6 +149,7 @@ function game.update(dt)
   --handle game stuff
   if show_main_menue == false then
     game.play(dt)
+    mouse_moved=false
     return
   end
   
@@ -193,6 +194,7 @@ function game.MouseHandle(x,y,btn)
 end 
  
 function game.MouseMoved(mx,my) 
+  print("MOUSE MOVE")
   mouse_coords=  g.libs.types.pos(mx,my)
   mouse_moved = true
 end 

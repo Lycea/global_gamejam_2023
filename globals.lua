@@ -25,5 +25,6 @@ lib("components.generator","generator")
 
 
 gvar.visible_grids ={}
+gvar.cur_selection = nil
 
 return globals

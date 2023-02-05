@@ -23,21 +23,27 @@ function grid_tile:idx_to_str(idx)
     return ""..str(idx.x)..":"..str(idx.y)
 end 
 
-function puddle:new(pos,size)
+function puddle:new(pos,size,idx)
     --grid local placements
     self.pos = pos
     self.size =size
+    self.idx = idx
 
     self.water_value_max = 100
     self.water_value_now = 90
 
+    self.selected=false
+
     self.connection= nil
 end
 
-function cave:new(pos,size)
+function cave:new(pos,size,idx)
     self.pos = pos
     self.size = size
-
+    self.idx = idx
+    
+    self.interact = g.libs.types.pos( self.pos.x, self.pos.y +self.size)
+    self.selected = false
     self.plants= nil
 end
 
@@ -45,30 +51,31 @@ function generator:new()
     self.grid_size = {w= 200,h= 200}
 end
 
-function generator:add_puddles()
+function generator:add_puddles(idx)
     local puddles ={}
     table.insert(puddles,  
-                puddle( g.libs.types.pos( 50,50 ), 20   ))
+                puddle( g.libs.types.pos( 50,50 ), 20 ,idx  ))
 
     table.insert(puddles,  
-                puddle( g.libs.types.pos( self.grid_size.w - 50, 50 ), 20   ))
+                puddle( g.libs.types.pos( self.grid_size.w - 50, 50 ), 20, idx   ))
 
     table.insert(puddles,  
-                puddle( g.libs.types.pos( 50, 150 ), 20   ))
+                puddle( g.libs.types.pos( 50, 150 ), 20,idx   ))
     
     table.insert(puddles,  
-                puddle( g.libs.types.pos( self.grid_size.w - 50, 150 ), 20   ))
+                puddle( g.libs.types.pos( self.grid_size.w - 50, 150 ), 20,idx   ))
     
     return puddles 
 end
 
-function generator:add_cave()
-    local cave = cave( g.libs.types.pos(self.grid_size.w/2, self.grid_size.h/2))
+function generator:add_cave(idx)
+    local cave = cave( g.libs.types.pos(self.grid_size.w/2, self.grid_size.h/2 ), 40, idx)
     return cave
 end
 
 
-
+generator.cave   = cave
+generator.puddle = puddle
 
 
 
@@ -76,8 +83,9 @@ end
 function generator:new_grid_tile(idx)
     local grid_tile = grid_tile(idx)
 
-    grid_tile.objects.puddles = self:add_puddles()
-    grid_tile.objects.cave    = self:add_cave()
+    grid_tile.objects.puddles = self:add_puddles(idx)
+    grid_tile.objects.cave    = self:add_cave(idx)
+
     grid_tile.objects.root_parts = {}
 
     return grid_tile
@@ -86,8 +94,8 @@ end
 function generator:first_tile()
     local grid_tile = grid_tile({x=0,y=0})
 
-    grid_tile.objects.puddles  = self:add_puddles()
-    grid_tile.objects.cave     = self:add_cave()
+    grid_tile.objects.puddles  = self:add_puddles(grid_tile.idx)
+    grid_tile.objects.cave     = self:add_cave(grid_tile.idx)
     grid_tile.objects.root_parts = {}
 
     return grid_tile
