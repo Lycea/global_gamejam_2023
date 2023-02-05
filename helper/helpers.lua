@@ -15,7 +15,7 @@ end
 function helpers.lerp_2d(p1, p2, t)
     local x = helpers.lerp(p1.x, p2.x, t)
     local y = helpers.lerp(p1.y, p2.y, t)
-    return g.lib.base_type.pos(x,y)
+    return g.libs.types.pos(x,y)
 end
 
 function helpers.clear_color()

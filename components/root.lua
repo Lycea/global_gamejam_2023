@@ -12,6 +12,24 @@ end
 
 function root_piece:draw()
     love.graphics.line(self.start_pos.x,self.start_pos.y,self.end_pos.x,self.end_pos.y)
+
+    love.graphics.push()
+    
+    local w = 10
+    local h = self.start_pos:distance_to(self.end_pos)
+
+    --love.graphics.rectangle("fill", self.start_pos.x, self.start_pos.y, w,h) -- move relative (0,0) to (x,y)
+    local mid_point = helpers.lerp_2d(self.start_pos,self.end_pos,0.5)
+        
+
+    love.graphics.translate(mid_point.x , mid_point.y)
+    --love.graphics.translate(self.start_pos.x , self.start_pos.y)
+    
+    love.graphics.rotate(  self.start_pos:angle(self.end_pos) ) -- rotate coordinate system around relative (0,0) (absolute (x,y))
+    love.graphics.rectangle("fill", -h/2, -w/2, h, w) 
+    love.graphics.pop()
+
+    love.graphics.circle("fill",self.end_pos.x,self.end_pos.y, w/2)
 end
 
 function root_piece:set_end(is_end)

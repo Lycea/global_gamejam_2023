@@ -153,7 +153,6 @@ function game.update(dt)
     return
   end
   
-  
   --handle menue
   update_menue()
   
@@ -194,7 +193,6 @@ function game.MouseHandle(x,y,btn)
 end 
  
 function game.MouseMoved(mx,my) 
-  print("MOUSE MOVE")
   mouse_coords=  g.libs.types.pos(mx,my)
   mouse_moved = true
 end 
