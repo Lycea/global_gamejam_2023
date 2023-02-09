@@ -13,8 +13,9 @@ function grid_tile:new( idx )
     end
     self.idx =idx
     self.objects ={}
-    print("ADDING IDXs:", self.idx.x,self.idx.y)
-    print("TO_STR:",self:idx_to_str(self.idx))
+    print("\ngrid gen:")
+    print("   ADDING IDXs:", self.idx.x,self.idx.y)
+    print("   TO_STR:",self:idx_to_str(self.idx))
     g.vars.full_grid[self:idx_to_str(self.idx)] = self
 end
 
@@ -81,14 +82,19 @@ generator.puddle = puddle
 
 
 function generator:new_grid_tile(idx)
-    local grid_tile = grid_tile(idx)
+    
+    if g.vars.full_grid[ g.vars.actual_grid:idx_to_str(idx) ] == nil and idx.y >=0 then
+        local grid_tile = grid_tile(idx)
 
-    grid_tile.objects.puddles = self:add_puddles(idx)
-    grid_tile.objects.cave    = self:add_cave(idx)
+        grid_tile.objects.puddles = self:add_puddles(idx)
+        grid_tile.objects.cave    = self:add_cave(idx)
 
-    grid_tile.objects.root_parts = {}
+        grid_tile.objects.root_parts = {}
 
-    return grid_tile
+    --return grid_tile
+    elseif idx.y <0  and g.vars.full_grid[ g.vars.actual_grid:idx_to_str(idx) ] == nil then
+         
+    end
 end
 
 function generator:first_tile()
@@ -106,10 +112,31 @@ end
 
 
 -- general extenders
-function grid_tile:add_left(base_idx)end
-function grid_tile:add_right(base_idx)end
-function grid_tile:add_up(base_idx)end
-function grid_tile:add_down(base_idx)end
+function grid_tile:add_left(base_idx)
+    g.libs.generator:new_grid_tile({x=base_idx.x-1,y=base_idx.y-1})
+    g.libs.generator:new_grid_tile({x=base_idx.x-1,y=base_idx.y-0})
+    g.libs.generator:new_grid_tile({x=base_idx.x-1,y=base_idx.y+1})
+end
+
+function grid_tile:add_right(base_idx)
+    g.libs.generator:new_grid_tile({x=base_idx.x+1,y=base_idx.y-1})
+    g.libs.generator:new_grid_tile({x=base_idx.x+1,y=base_idx.y-0})
+    g.libs.generator:new_grid_tile({x=base_idx.x+1,y=base_idx.y+1})
+end
+
+function grid_tile:add_up(base_idx)
+    g.libs.generator:new_grid_tile({x=base_idx.x+1,y=base_idx.y-1})
+    g.libs.generator:new_grid_tile({x=base_idx.x,y=base_idx.y-1})
+    g.libs.generator:new_grid_tile({x=base_idx.x-1,y=base_idx.y-1})
+end
+
+function grid_tile:add_down(base_idx)
+    g.libs.generator:new_grid_tile({x=base_idx.x+1, y=base_idx.y+1})
+    g.libs.generator:new_grid_tile({x=base_idx.x,   y=base_idx.y+1})
+    g.libs.generator:new_grid_tile({x=base_idx.x-1, y=base_idx.y+1})
+end
+
+
 
 --first init helpers
 function grid_tile:add_mid()
@@ -118,9 +145,9 @@ function grid_tile:add_mid()
 end
 
 function grid_tile:add_bot()
-    g.libs.generator:new_grid_tile({x=-1,y=-1})
-    g.libs.generator:new_grid_tile({x=0 ,y=-1})
-    g.libs.generator:new_grid_tile({x=1 ,y=-1})
+    g.libs.generator:new_grid_tile({x=-1,y=1})
+    g.libs.generator:new_grid_tile({x=0 ,y=1})
+    g.libs.generator:new_grid_tile({x=1 ,y=1})
 end
 
 function generator:new_grid()

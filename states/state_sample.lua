@@ -3,7 +3,8 @@ local in_root =class_base:extend()
 
 local grid_size   = nil
 local base_offset = nil
-
+visible_grids = nil
+view_port = nil
 function in_root:new()
     print("initialised!!")
 
@@ -23,6 +24,13 @@ function in_root:startup()
     g.vars.click_timer = timer(0.1)
 
     g.libs.generator:new_grid()
+
+    visible_grids =g.vars.visible_grids
+    view_port = g.vars.view_port
+
+    mpos = g.libs.types.pos(scr_w/2,150)
+
+    love.mouse.setPosition(mpos.x,mpos.y + 20)
 end
 
 
@@ -81,11 +89,13 @@ end
 
 
 local function grid()
-    local viewable_grids ={"0:0","1:0","-1:0"}
+    --local act ={"0:0","1:0","-1:0"}
     --grid debug
     
+    visible_grids = g.vars.full_grid
 
-    for idx, grid_key in pairs(viewable_grids) do
+    --for idx, grid_key in pairs(visible_grids) do
+    for  grid_key, _ in pairs(visible_grids) do
         --print("debug print keys")
         --for key,val in pairs( g.vars.full_grid) do
         --    print(key)
@@ -113,6 +123,18 @@ local function grid()
         end
     end
     
+    love.graphics.setColor(0,255,0)
+    local act_grid = g.vars.actual_grid
+    --debug active grid
+    local offset ={
+        x = base_offset.x + act_grid.idx.x*grid_size.w,
+        y = base_offset.y + act_grid.idx.y*grid_size.h
+    }
+
+    love.graphics.rectangle("line",
+                            offset.x,
+                            offset.y,
+                            grid_size.w,grid_size.h)
 
 end
 
@@ -126,8 +148,57 @@ function in_root:draw()
 end
 
 
+function update_grid()
+    local act_crid = g.vars.actual_grid
+    local grid_mid = helpers.to_glob( {x=grid_size.w/2, y=grid_size.h/2},
+                                        g.vars.actual_grid.idx.x,g.vars.actual_grid.idx.y )
+
+    local new_grid_idx = nil
+    local gen_dir      = nil
+    local new_grid_y   = nil
+
+
+    --left
+    if mouse_coords.x < grid_mid.x - grid_size.w/2 then
+        new_grid_idx = g.vars.actual_grid:idx_to_str({x=act_crid.idx.x-1,y=act_crid.idx.y})
+        gen_dir = "left"
+        new_grid_y = act_crid.idx.y
+    --right
+    elseif mouse_coords.x > grid_mid.x + grid_size.w/2 then
+        new_grid_y = act_crid.idx.y
+        new_grid_idx = g.vars.actual_grid:idx_to_str({x=act_crid.idx.x+1,y=act_crid.idx.y})
+        gen_dir = "right"
+    elseif mouse_coords.y < grid_mid.y - grid_size.h/2 then
+        new_grid_y = act_crid.idx.y -1
+        new_grid_idx = g.vars.actual_grid:idx_to_str({x=act_crid.idx.x,y=act_crid.idx.y-1})
+        gen_dir = "up"
+    elseif mouse_coords.y > grid_mid.y + grid_size.h/2 then
+        new_grid_y = act_crid.idx.y +1
+        new_grid_idx = g.vars.actual_grid:idx_to_str({x=act_crid.idx.x,y=act_crid.idx.y+1})
+        gen_dir = "down"
+    end
+
+    if new_grid_idx ~= nil and new_grid_y >=0 then
+        print("\n=============")
+        print("UPDATING GRID\n")
+        print("   MOUSE:",mouse_coords.x,mouse_coords.y)
+        print("   MID:",grid_mid.x,grid_mid.y)
+        g.vars.actual_grid =  g.vars.full_grid[new_grid_idx]
+        print("   IDX:",new_grid_idx)
+        print(g.vars.actual_grid)
+        print("   UPGRADE DIR:",gen_dir)
+        g.vars.actual_grid["add_"..gen_dir](g.vars.actual_grid, 
+                                            g.vars.actual_grid.idx )
+
+    
+    end
+    
+end
+
 function in_root:update()
-    local viewable_grids ={"0:0","1:0","-1:0"}
+    --local viewable_grids ={"0:0","1:0","-1:0"}
+    visible_grids = g.vars.full_grid
+
 
     --print(love.mouse.isDown(1))
     if love.mouse.isDown(1) and g.vars.click_timer:check() then
@@ -138,42 +209,49 @@ function in_root:update()
        g.var("main_root"):append(pos)
 
     end
+    
+    if mouse_moved then
+        update_grid()
+    end
 
     if mouse_moved==true and g.vars.cur_selection== nil then
         
-        print("check which is selected")
-        print(mouse_moved, g.vars.cur_selection)
+        --print("check which is selected")
+        --print(mouse_moved, g.vars.cur_selection)
         local found_hit = false
-        for _,grid_id in pairs(viewable_grids) do
+        --for _,grid_id in pairs(visible_grids) do
+        for grid_id, _ in pairs(visible_grids) do
             local grid = g.vars.full_grid[grid_id]
+            if grid ~= nil then
+                for _ ,puddle in pairs(grid.objects.puddles) do
+                    if helpers.to_glob( puddle.pos,grid.idx.x,grid.idx.y ):distance_to(mouse_coords) <= puddle.size then
+                        puddle.selected = true
+                    
+                        found_hit = true
 
-            for _ ,puddle in pairs(grid.objects.puddles) do
-                if helpers.to_glob( puddle.pos,grid.idx.x,grid.idx.y ):distance_to(mouse_coords) <= puddle.size then
-                    puddle.selected = true
+                        g.vars.cur_selection = puddle
+                        
+                        break
+                    end
+                end
                 
-                    found_hit = true
+                if grid.objects.cave and found_hit == false then
+                    local cave = grid.objects.cave
+                    if helpers.to_glob( cave.interact,grid.idx.x,grid.idx.y ):distance_to(mouse_coords) <= 10 then
+                        cave.selected = true
+                        found_hit = true
+                        g.vars.cur_selection = cave
+                        break
+                    end
+                end
 
-                    g.vars.cur_selection = puddle
+                if found_hit then
                     break
                 end
-            end
-            
-            if grid.objects.cave and found_hit == false then
-                local cave = grid.objects.cave
-                if helpers.to_glob( cave.interact,grid.idx.x,grid.idx.y ):distance_to(mouse_coords) <= 10 then
-                    cave.selected = true
-                    found_hit = true
-                    g.vars.cur_selection = cave
-                    break
-                end
-            end
-
-            if found_hit then
-                break
             end
         end
     elseif mouse_moved then
-        print("check if still selected")
+        --print("check if still selected")
         local obj_coord = nil
         local obj_dist = nil
 

@@ -27,4 +27,9 @@ lib("components.generator","generator")
 gvar.visible_grids ={}
 gvar.cur_selection = nil
 
+gvar.end_points = {}
+
+gvar.view_port ={w= 200,h=200}
+
+
 return globals
