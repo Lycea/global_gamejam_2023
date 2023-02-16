@@ -3,6 +3,9 @@ local in_root =class_base:extend()
 
 local grid_size   = nil
 local base_offset = nil
+
+local cam_offset = nil
+
 visible_grids = nil
 view_port = nil
 function in_root:new()
@@ -13,6 +16,7 @@ end
 
 function in_root:startup()
     grid_size = g.lib("generator").grid_size
+    cam_offset =  g.libs.types.pos(0,0)
     
     base_offset={
         x= scr_w/2 -grid_size.w/2,
@@ -94,6 +98,8 @@ local function grid()
     
     visible_grids = g.vars.full_grid
 
+    love.graphics.push()
+    love.graphics.translate(cam_offset.x,cam_offset.y)
     --for idx, grid_key in pairs(visible_grids) do
     for  grid_key, _ in pairs(visible_grids) do
         --print("debug print keys")
@@ -136,11 +142,16 @@ local function grid()
                             offset.y,
                             grid_size.w,grid_size.h)
 
+    love.graphics.pop()
+
 end
 
 
 function in_root:draw()
+    love.graphics.push()
+    love.graphics.translate(cam_offset.x,cam_offset.y)
     background()
+    love.graphics.pop()
 
     g.var("main_root"):draw()
 
@@ -211,7 +222,16 @@ function in_root:update()
     end
     
     if mouse_moved then
+        if mouse_coords_prev == nil then
+            mouse_coords_prev = mouse_coords:copy()
+        end
+
+        cam_offset = g.libs.types.pos( cam_offset.x +(mouse_coords_prev.x - mouse_coords.x),
+                                       cam_offset.y +(mouse_coords_prev.y - mouse_coords.y))
+        print("Updated offset:",cam_offset.x,cam_offset.y)
         update_grid()
+
+        mouse_coords_prev = mouse_coords:copy()
     end
 
     if mouse_moved==true and g.vars.cur_selection== nil then
