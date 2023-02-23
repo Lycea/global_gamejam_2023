@@ -225,7 +225,7 @@ function in_root:update()
     if love.mouse.isDown(1) and g.vars.click_timer:check() then
         local m_pos_x,m_pos_y = love.mouse.getPosition()
        --print("adding")
-       local pos = g.libs.types.pos(m_pos_x,m_pos_y)
+       local pos = g.libs.types.pos(m_pos_x - cam_offset.x,m_pos_y- cam_offset.y)
        --print(pos.x,pos.y)
        g.var("main_root"):append(pos)
 
