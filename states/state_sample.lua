@@ -5,9 +5,14 @@ local grid_size   = nil
 local base_offset = nil
 
 local cam_offset = nil
+local scr_mid = nil
 
+local mid_angle = -1
+
+local move_timer = timer(0.005)
 visible_grids = nil
 view_port = nil
+
 function in_root:new()
     print("initialised!!")
 
@@ -17,16 +22,17 @@ end
 function in_root:startup()
     grid_size = g.lib("generator").grid_size
     cam_offset =  g.libs.types.pos(0,0)
-    
+    scr_mid = g.libs.types.pos(scr_w/2,scr_h/2)
+
     base_offset={
         x= scr_w/2 -grid_size.w/2,
         y= 160 
     }
 
-
+    g.vars.cam_offset = cam_offset
     g.vars.main_root = g.lib("Root")(g.libs.types.pos(scr_w/2,150), g.libs.types.pos(scr_w/2, 155))
     g.vars.click_timer = timer(0.1)
-
+    
     g.libs.generator:new_grid()
 
     visible_grids =g.vars.visible_grids
@@ -34,7 +40,8 @@ function in_root:startup()
 
     mpos = g.libs.types.pos(scr_w/2,150)
 
-    love.mouse.setPosition(mpos.x,mpos.y + 20)
+    --love.mouse.setPosition(mpos.x,mpos.y + 20)
+    love.mouse.setPosition(mpos.x,scr_mid.y)
 end
 
 
@@ -149,11 +156,14 @@ end
 
 function in_root:draw()
     love.graphics.push()
-    love.graphics.translate(cam_offset.x,cam_offset.y)
-    background()
-    love.graphics.pop()
+        love.graphics.translate(cam_offset.x,cam_offset.y)
+        background()
+    --love.graphics.pop()
 
-    g.var("main_root"):draw()
+    --love.graphics.push()
+        --love.graphics.translate(cam_offset.x,cam_offset.y)
+        g.var("main_root"):draw()
+    love.graphics.pop()
 
     grid()
 end
@@ -170,20 +180,20 @@ function update_grid()
 
 
     --left
-    if mouse_coords.x < grid_mid.x - grid_size.w/2 then
+    if mouse_coords.x - cam_offset.x < grid_mid.x - grid_size.w/2 then
         new_grid_idx = g.vars.actual_grid:idx_to_str({x=act_crid.idx.x-1,y=act_crid.idx.y})
         gen_dir = "left"
         new_grid_y = act_crid.idx.y
     --right
-    elseif mouse_coords.x > grid_mid.x + grid_size.w/2 then
+    elseif mouse_coords.x - cam_offset.x > grid_mid.x + grid_size.w/2 then
         new_grid_y = act_crid.idx.y
         new_grid_idx = g.vars.actual_grid:idx_to_str({x=act_crid.idx.x+1,y=act_crid.idx.y})
         gen_dir = "right"
-    elseif mouse_coords.y < grid_mid.y - grid_size.h/2 then
+    elseif mouse_coords.y - cam_offset.y < grid_mid.y - grid_size.h/2 then
         new_grid_y = act_crid.idx.y -1
         new_grid_idx = g.vars.actual_grid:idx_to_str({x=act_crid.idx.x,y=act_crid.idx.y-1})
         gen_dir = "up"
-    elseif mouse_coords.y > grid_mid.y + grid_size.h/2 then
+    elseif mouse_coords.y  - cam_offset.y > grid_mid.y + grid_size.h/2 then
         new_grid_y = act_crid.idx.y +1
         new_grid_idx = g.vars.actual_grid:idx_to_str({x=act_crid.idx.x,y=act_crid.idx.y+1})
         gen_dir = "down"
@@ -221,19 +231,42 @@ function in_root:update()
 
     end
     
-    if mouse_moved then
+    if mouse_moved == false and move_timer:check()  then
+        -- adjust camera offset since in a moving zone
+        if mid_angle ~= -1 then
+            cam_offset = helpers.point_in_circle(cam_offset,1,math.deg(mid_angle)+180)--mid_dist)
+            update_grid()
+        end
+    elseif mouse_moved then
         if mouse_coords_prev == nil then
             mouse_coords_prev = mouse_coords:copy()
         end
 
-        cam_offset = g.libs.types.pos( cam_offset.x +(mouse_coords_prev.x - mouse_coords.x),
-                                       cam_offset.y +(mouse_coords_prev.y - mouse_coords.y))
-        print("Updated offset:",cam_offset.x,cam_offset.y)
+        --cam_offset = g.libs.types.pos( cam_offset.x +(mouse_coords_prev.x - mouse_coords.x),
+        --                               cam_offset.y +(mouse_coords_prev.y - mouse_coords.y))
+        --local mid_diff = g.lib.types.pos(scr_mid.x -mouse_coords.x, scr_mid.y - mouse_coords.y   )
+        local mid_dist = scr_mid:distance_to(mouse_coords)  
+        
+        if mid_dist > 20  then
+            mid_angle = scr_mid:angle(mouse_coords)
+
+            print("Distance:",mid_dist)
+            
+
+            cam_offset = helpers.point_in_circle(cam_offset,1,math.deg(mid_angle)+180)--mid_dist)
+            print("Updated offset:",cam_offset.x,cam_offset.y)
+        else
+            mid_angle = -1
+        end
+
+
         update_grid()
 
         mouse_coords_prev = mouse_coords:copy()
     end
 
+
+    --check for a selection
     if mouse_moved==true and g.vars.cur_selection== nil then
         
         --print("check which is selected")
@@ -244,7 +277,8 @@ function in_root:update()
             local grid = g.vars.full_grid[grid_id]
             if grid ~= nil then
                 for _ ,puddle in pairs(grid.objects.puddles) do
-                    if helpers.to_glob( puddle.pos,grid.idx.x,grid.idx.y ):distance_to(mouse_coords) <= puddle.size then
+                    --if helpers.to_glob( puddle.pos,grid.idx.x,grid.idx.y ):distance_to(  mouse_coords) <= puddle.size then
+                    if helpers.to_glob( puddle.pos ,grid.idx.x,grid.idx.y ):distance_to(  {x = mouse_coords.x - cam_offset.x,  y= mouse_coords.y - cam_offset.y}) <= puddle.size then
                         puddle.selected = true
                     
                         found_hit = true
@@ -257,7 +291,7 @@ function in_root:update()
                 
                 if grid.objects.cave and found_hit == false then
                     local cave = grid.objects.cave
-                    if helpers.to_glob( cave.interact,grid.idx.x,grid.idx.y ):distance_to(mouse_coords) <= 10 then
+                    if helpers.to_glob( cave.interact,grid.idx.x,grid.idx.y ):distance_to({x=mouse_coords.x - cam_offset.x,y= mouse_coords.y - cam_offset.y}) <= 10 then
                         cave.selected = true
                         found_hit = true
                         g.vars.cur_selection = cave

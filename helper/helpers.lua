@@ -35,4 +35,13 @@ function helpers.to_glob(loc_pos,grid_x,grid_y)
     base_offset.y + grid_y*grid_size.h  +loc_pos.y)
 end
 
+
+
+function helpers.point_in_circle(base_point , range, angle)
+  local x = range*math.cos(math.rad(angle))+base_point.x
+  local y = range*math.sin(math.rad(angle))+base_point.y
+  
+  return g.libs.types.pos(x, y)
+end
+
 return helpers
