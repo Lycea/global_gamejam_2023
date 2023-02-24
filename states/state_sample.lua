@@ -103,18 +103,22 @@ local function grid()
     --local act ={"0:0","1:0","-1:0"}
     --grid debug
     
-    visible_grids = g.vars.full_grid
+    --visible_grids = g.vars.full_grid
 
     love.graphics.push()
     love.graphics.translate(cam_offset.x,cam_offset.y)
-    --for idx, grid_key in pairs(visible_grids) do
-    for  grid_key, _ in pairs(visible_grids) do
+
+
+    for _, grid_key in pairs(g.vars.visible_grids) do
+        print(grid_key)
+    --for  grid_key, _ in pairs(visible_grids) do
         --print("debug print keys")
         --for key,val in pairs( g.vars.full_grid) do
         --    print(key)
         --end
 
         local draw_grid =g.vars.full_grid[grid_key]
+
 
         love.graphics.setColor(0,0,0)
         local offset ={
@@ -211,14 +215,25 @@ function update_grid()
         g.vars.actual_grid["add_"..gen_dir](g.vars.actual_grid, 
                                             g.vars.actual_grid.idx )
 
-    
+        g.vars.visible_grids={}
+        local new_idx = g.vars.actual_grid.idx
+        for y=-1,1 do
+            for x=-1,1 do
+                if new_idx.y +y >=0 then
+                table.insert(g.vars.visible_grids, g.vars.actual_grid:idx_to_str({x=new_idx.x +x, y=new_idx.y +y}))
+                end
+            end
+        end
+
+            
+
     end
     
 end
 
 function in_root:update()
     --local viewable_grids ={"0:0","1:0","-1:0"}
-    visible_grids = g.vars.full_grid
+    --visible_grids = g.vars.full_grid
 
 
     --print(love.mouse.isDown(1))
@@ -272,8 +287,8 @@ function in_root:update()
         --print("check which is selected")
         --print(mouse_moved, g.vars.cur_selection)
         local found_hit = false
-        --for _,grid_id in pairs(visible_grids) do
-        for grid_id, _ in pairs(visible_grids) do
+        for _,grid_id in pairs(g.vars.visible_grids) do
+        --for grid_id, _ in pairs(visible_grids) do
             local grid = g.vars.full_grid[grid_id]
             if grid ~= nil then
                 for _ ,puddle in pairs(grid.objects.puddles) do

@@ -156,6 +156,14 @@ function generator:new_grid()
     
     g.vars.actual_grid:add_mid()
     g.vars.actual_grid:add_bot()
+
+    for y=-1,1 do
+        for x=-1,1 do
+            if  y >= 0 then
+            table.insert(g.vars.visible_grids, g.vars.actual_grid:idx_to_str({x=0 +x, y=0 +y}))
+            end
+        end
+    end
 end
 
 return generator()
