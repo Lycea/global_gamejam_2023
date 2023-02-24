@@ -338,6 +338,8 @@ function in_root:update()
             g.vars.cur_selection   = nil
         end
     end 
+
+    cam_offset.y = math.min(150, cam_offset.y)
 end
 
 function in_root:shutdown()
