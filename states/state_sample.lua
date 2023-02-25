@@ -50,13 +50,13 @@ end
 local function background()
     --sky base
     love.graphics.setColor(86, 194, 240)
-    love.graphics.rectangle("fill",0,0,scr_w,150)
+    love.graphics.rectangle("fill",0,0,scr_w,scr_h)
     --grass layer
     love.graphics.setColor(0, 194, 0)
-    love.graphics.rectangle("fill",0,150,scr_w,10)
+    love.graphics.rectangle("fill",0,cam_offset.y+150,scr_w,10)
     --earth ~
     love.graphics.setColor(112, 72, 33)
-    love.graphics.rectangle("fill",0,160,scr_w,scr_h-160)
+    love.graphics.rectangle("fill",0,math.max(cam_offset.y+160,0),scr_w, scr_h)
 
     helpers.clear_color()
 end
@@ -160,12 +160,12 @@ end
 
 function in_root:draw()
     love.graphics.push()
-        love.graphics.translate(cam_offset.x,cam_offset.y)
         background()
     --love.graphics.pop()
 
     --love.graphics.push()
         --love.graphics.translate(cam_offset.x,cam_offset.y)
+        love.graphics.translate(cam_offset.x,cam_offset.y)
         g.var("main_root"):draw()
     love.graphics.pop()
 
