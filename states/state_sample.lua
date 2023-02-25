@@ -170,6 +170,8 @@ function in_root:draw()
     love.graphics.pop()
 
     grid()
+
+    love.graphics.print(cam_offset.y/10)
 end
 
 
@@ -282,7 +284,7 @@ function in_root:update()
 
 
     --check for a selection
-    if mouse_moved==true and g.vars.cur_selection== nil then
+    if  g.vars.cur_selection== nil then
         
         --print("check which is selected")
         --print(mouse_moved, g.vars.cur_selection)
@@ -319,7 +321,7 @@ function in_root:update()
                 end
             end
         end
-    elseif mouse_moved then
+    else 
         --print("check if still selected")
         local obj_coord = nil
         local obj_dist = nil
@@ -333,7 +335,7 @@ function in_root:update()
             obj_dist = cur_selection.size
         end
 
-        if helpers.to_glob( obj_coord ,cur_selection.idx.x,cur_selection.idx.y ):distance_to(mouse_coords) > obj_dist +3 then
+        if helpers.to_glob( obj_coord ,cur_selection.idx.x,cur_selection.idx.y ):distance_to({x=mouse_coords.x - cam_offset.x,y= mouse_coords.y - cam_offset.y}) > obj_dist +3 then
             cur_selection.selected = false
             g.vars.cur_selection   = nil
         end
