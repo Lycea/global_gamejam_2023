@@ -38,6 +38,7 @@ end
 
 function root_piece:set_end(is_end)
     self.is_end = is_end
+    return self
 end
 
 
@@ -54,6 +55,22 @@ function root:draw()
     for _,part in pairs(self.parts) do
         part:draw()
     end
+
+
+    -- add a potential next endpoint preview
+    local end_point = g.libs.types.pos(mouse_coords.x - g.vars.cam_offset.x,
+                                       mouse_coords.y - g.vars.cam_offset.y)
+
+    if end_point:distance_to(self.parts[#self.parts].end_pos) > 100 then
+        end_point = helpers.point_in_circle(self.parts[#self.parts].end_pos, 
+                                            100,
+                                            math.deg(self.parts[#self.parts].end_pos:angle(end_point))
+                                            )
+    end
+
+    local end_part = root_piece(end_point,
+                                self.parts[#self.parts].end_pos):set_end(true)
+    end_part:draw()
 end
 
 function root:append(end_point,parent)
