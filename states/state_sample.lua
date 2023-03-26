@@ -15,7 +15,6 @@ view_port = nil
 
 function in_root:new()
     print("initialised!!")
-
 end
 
 
@@ -242,9 +241,18 @@ function in_root:update()
     if love.mouse.isDown(1) and g.vars.click_timer:check() then
         local m_pos_x,m_pos_y = love.mouse.getPosition()
        --print("adding")
-       local pos = g.libs.types.pos(m_pos_x - cam_offset.x,m_pos_y- cam_offset.y)
+
+       local new_pos = g.libs.types.pos(m_pos_x - cam_offset.x,m_pos_y- cam_offset.y)
        --print(pos.x,pos.y)
-       g.var("main_root"):append(pos)
+        print()
+        if new_pos:distance_to(g.var("main_root").parts[#g.var("main_root").parts].end_pos) > 100 then
+            new_pos = helpers.point_in_circle(g.var("main_root").parts[#g.var("main_root").parts].end_pos, 
+                                            100,
+                                            math.deg(g.var("main_root").parts[#g.var("main_root").parts].end_pos:angle(new_pos))
+                                            )
+        end
+
+       g.var("main_root"):append(new_pos)
 
     end
     
@@ -342,6 +350,7 @@ function in_root:update()
     end 
 
     cam_offset.y = math.min(150, cam_offset.y)
+    g.vars.cam_offset = cam_offset
 end
 
 function in_root:shutdown()
